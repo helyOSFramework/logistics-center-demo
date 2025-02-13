@@ -1,6 +1,18 @@
 version: '3.5'
 services:
 
+
+    local_redis:
+        image: redis:latest
+        container_name: local_redis
+        ports:
+        - "6379:6379"
+        volumes:
+        - redis-data:/data
+        command: redis-server --requirepass mypass
+        networks:
+            - control-tower-net
+
 # ============================================================================
 # ============================================================================
 #                           AUTOTRUCK-TRUCKTRIX WEB APP
@@ -303,6 +315,12 @@ services:
             - MESSAGE_UPDATE_LIMIT=10
             - MESSAGE_RATE_LIMIT=50
 
+            # REDIS-COMPATIBLE inMEM DB
+            - REDIS_HOST=local_redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=mypass
+            - NUM_THREADS=4
+            - SOCKET_IO_ADAPTER=cluster
 
             # RBMQ ACCOUNTS
             - CREATE_RBMQ_ACCOUNTS=True
@@ -331,3 +349,6 @@ volumes:
 
     rbmq_data:
         external: false
+
+    redis-data:
+        driver: local
