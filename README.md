@@ -21,10 +21,27 @@ For this local version, the TruckTrix&reg; service was substituted by a simple c
 </br>
 
  ## To start
- 
-```
-docker-compose up -d
-```
+
+**Steps to Deploy with Docker Swarm:**
+
+1. **Initialize Docker Swarm** (if not already initialized):
+    ```bash
+    docker swarm init
+    ```
+
+2. **Deploy the Stack**:
+    ```bash
+docker stack rm logistic_center_stackdocker stack rm logistic_center_stack
+    ```
+
+This configuration ensures that Docker Swarm manages 4 replicas of the `helyos_core` service, distributing the load automatically.
+
+When finished run
+
+    ```bash
+docker stack rm logistic_center_stack
+    ```
+
 
 </br>
 

@@ -43,7 +43,7 @@ services:
         build: 
             context: ./microservices/clothoid_path_planner
             dockerfile: Dockerfile
-
+        image: local_planner_service
         container_name: local_planner_service
 
         ports:
@@ -68,7 +68,7 @@ services:
         build: 
             context: ./microservices/trailer_transport_planner
             dockerfile: Dockerfile
-
+        image: trailer_transport_service
         container_name: trailer_transport_service
 
         ports:
@@ -88,7 +88,7 @@ services:
         build: 
             context: ./microservices/pick_drop_service
             dockerfile: Dockerfile
-
+        image: pick_drop_park_service
         container_name: pick_drop_park_service
 
         ports:
@@ -107,7 +107,7 @@ services:
         build: 
             context: ./microservices/simplejson_map_server
             dockerfile: Dockerfile
-
+        image: map_service
         container_name: map_service
 
         ports:
