@@ -31,7 +31,9 @@ def main():
     context = request_body['context']
     step = context['orchestration']['current_step']
     
-    agent_id = request_data['agent_id']
+    agent_id = request_data.get('agent_id', None)
+    agent_uuid = request_data.get('agent_uuid', None)
+    
     operation = request_data['operation']
     trailer_uuid = request_data.get('trailer_uuid', None)
     target_name = request_data.get('target_name', None)
@@ -51,7 +53,11 @@ def main():
     if step == "prepare_mission":
         # Get truck data from context
         helyos_agents = context['agents'] # contains all data about the agent
-        truck = next((tool for tool in helyos_agents if tool['id'] == str(agent_id)), None) # find agent in context
+        if agent_id is not None:
+            truck = next((tool for tool in helyos_agents if tool['id'] == str(agent_id)), None) # find agent in context
+        elif agent_uuid is not None:
+            truck = next((tool for tool in helyos_agents if tool['uuid'] == str(agent_uuid)), None)
+
         truck_position = {**truck['pose']} 
         
         if operation == "pick":          
@@ -70,7 +76,10 @@ def main():
             destination = {**trailer_position}
             destination['x'] = destination['x'] + TRAILER_CONNECTION_DISTANCE*math.cos(destination['orientations'][0]/1000)
             destination['y'] = destination['y'] + TRAILER_CONNECTION_DISTANCE*math.sin(destination['orientations'][0]/1000)
-            new_request_data = {'agent_id': agent_id, **destination}
+            if agent_id is not None:
+                new_request_data = {'agent_id': agent_id, **destination}
+            else:
+                new_request_data = {'agent_uuid': agent_uuid, **destination}
 
             response =  { 'status': "ready",
                         'results': [],
@@ -94,7 +103,10 @@ def main():
             destination['x'] = target['metadata']['x'] + positon_offset*math.cos(target['metadata']['orientations'][0]/1000)
             destination['y'] = target['metadata']['y'] + positon_offset*math.sin(target['metadata']['orientations'][0]/1000)
             destination['orientations'] = target['metadata']['orientations']
-            new_request_data = {'agent_id': agent_id, **destination}
+            if agent_id is not None:
+                new_request_data = {'agent_id': agent_id, **destination}
+            else:
+                new_request_data = {'agent_uuid': agent_uuid, **destination}
 
             response =  { 'status': "ready",
                         'results': [],
@@ -114,9 +126,14 @@ def main():
         dependencies = context['dependencies']
         prepare_mission_step = findStep(dependencies, 'prepare_mission')
         if operation == "pick":
-            assignment = {'agent_id': agent_id, 'assignment':  {'operation': f"connect_trailer {prepare_mission_step['trailer_uuid']}"}}
+            assignment = {'assignment':  {'operation': f"connect_trailer {prepare_mission_step['trailer_uuid']}"}}
         if operation == "drop":
-            assignment = {'agent_id': agent_id, 'assignment':  {'operation': f"disconnect_trailer"}}
+            assignment = {'assignment':  {'operation': f"disconnect_trailer"}}
+
+        if agent_id is not None:
+            assignment['agent_id'] = agent_id
+        else:
+            assignment['agent_uuid'] = agent_uuid
 
         response =   {'status' : "ready", 
                       'results' : [assignment]
